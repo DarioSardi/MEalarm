@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.ThreadLocalRandom;
 
+import monitor.Monitor;
+
 public class MeSystem implements Runnable{
 	int ALARMSNUMBER =4;
 	private boolean machineOn;

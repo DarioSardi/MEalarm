@@ -1,4 +1,4 @@
-package medicalEquip;
+package monitor;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
