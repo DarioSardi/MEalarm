@@ -15,7 +15,6 @@ public class MeSystem implements Runnable{
 	private boolean machineOn;
 	private double[] data = new double[ALARMSNUMBER];
 	private Alarm[] alarmSet = new Alarm[ALARMSNUMBER];
-	private boolean slowRun = false;
 	private Monitor myMonitor=null;
 	private String[] ranges= new String[ALARMSNUMBER];
 	public MeSystem() throws IOException {
@@ -28,7 +27,7 @@ public class MeSystem implements Runnable{
 			row = csvReader.readLine();
 			String[] data =row.split(",");
 			this.alarmSet[i]= new Alarm(Boolean.parseBoolean(data[0]),Integer.parseInt(data[1])*1000,"LOW", Integer.parseInt(data[2]),Integer.parseInt(data[3]), i,this);
-			s="max: "+Integer.parseInt(data[2])+"\nmin: "+Integer.parseInt(data[3]);
+			s="max: "+Integer.parseInt(data[2])+"<br/> min: "+Integer.parseInt(data[3]);
 			this.ranges[i]=s;
 		}
 		this.data[0]=ThreadLocalRandom.current().nextLong(60,80);
@@ -74,7 +73,8 @@ public class MeSystem implements Runnable{
 		//System.out.println("up "+data[0]+", "+data[1]+", "+data[2]+", "+data[3]);
 	}
 	
-	 public void run_slow() {
+
+	 public void run() {
 		 long lastcheck = System.currentTimeMillis();
 		 while(this.machineOn) {
 			 if(System.currentTimeMillis()-lastcheck>100) {
@@ -87,18 +87,6 @@ public class MeSystem implements Runnable{
 			 }
 		 }
 	 }
-	 public void run() {
-		 if(this.slowRun) { 
-			 run_slow();
-		}
-		 else {
-			 
-			 while(this.machineOn) {
-				 updateValues();
-				 this.myMonitor.updateData(data);
-			 }
-		}
-	 }
 	 
 	 
 	public static void main(String[] args) throws IOException {
@@ -106,7 +94,6 @@ public class MeSystem implements Runnable{
 		Monitor m= new Monitor(mesys);
 		mesys.attachMonitor(m);
 		mesys.startAlarms();
-		mesys.slowRun = true;
 		Thread subsystemUpdate = new Thread(mesys);
 		subsystemUpdate.start();
 	

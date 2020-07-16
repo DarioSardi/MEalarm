@@ -89,10 +89,10 @@ public class Monitor {
 	}
 	
 	public void setRanges(String[] ranges) {
-		range0.setText(ranges[0]);
-		range1.setText(ranges[1]);
-		range2.setText(ranges[2]);
-		range3.setText(ranges[3]);
+		range0.setText("<html>"+ranges[0]+"</html>");
+		range1.setText("<html>"+ranges[1]+"</html>");
+		range2.setText("<html>"+ranges[2]+"</html>");
+		range3.setText("<html>"+ranges[3]+"</html>");
 	}
 	
 	
@@ -136,6 +136,7 @@ public class Monitor {
 	}
 	private void process(ActionEvent ae, int i) {
 		this.me.ackAlarm(i);
+		//JButton b= (JButton)ae.getSource();
 	}
 	
 	public void ackLabel(boolean ack,int id) {

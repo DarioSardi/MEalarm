@@ -109,6 +109,7 @@ public class Alarm{
 		this.alarmConditionStart=0;
 		this.audioAlarm=false;
 		this.visualAlarm=false;
+		//TODO ack reset
 		updateMonitor(0);
 		this.alarmRiseTime= System.currentTimeMillis(); //TODO ...
 		Date date=new Date(this.alarmRiseTime);
