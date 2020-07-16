@@ -1,13 +1,16 @@
 package medicalEquip;
 import java.util.Date;
 
-public class Alarm implements Runnable{
+import monitor.Monitor;
+
+public class Alarm{
 
 	private MeSystem mySystem;
+	private Monitor monitor;
 	//SETTINGS
 	private boolean isLatching;
-	private int max_th;
-	private int min_th;
+	private double max_th;
+	private double min_th;
 	private int valID;
 	private String priority;
 	//ALARM
@@ -17,12 +20,13 @@ public class Alarm implements Runnable{
 	private boolean isActive=true;
 	private boolean audioAlarm = false;
 	private int alarmDelay; //based on prio or programmable?
+	private long minimumAlarmTime = 3000;
 	private long alarmRiseTime;
 	//ACKNOWLEDGE
 	private boolean acknowledged=false;
-	private boolean isTimedAck=false;
+	private boolean isTimedAck=true;
 	private long ackStartTime=0; //TODO init TBD
-	private long timedAckLimit=60000; //1 min max time of ack before alarms goes off again
+	private long timedAckLimit=10000; //1 min max time of ack before alarms goes off again
 	//AUDIO PAUSED
 	private boolean audioOff =false;
 	private boolean isAudioPaused =false;
@@ -33,46 +37,50 @@ public class Alarm implements Runnable{
 		this.alarmCondition=false;
 		this.alarmDelay = delay;
 		this.priority = prio;
-		this.max_th=max;
-		this.min_th=min;
+		this.max_th=(double) max;
+		this.min_th=(double) min;
 		this.valID=id;
 		this.mySystem = s;
-		System.out.println("init alarm "+this.valID+" maxt:"+this.max_th+" minth: "+this.min_th+" delay: "+this.alarmDelay);
+		//System.out.println("init alarm "+this.valID+" maxt:"+this.max_th+" minth: "+this.min_th+" delay: "+this.alarmDelay);
 	}
 	
 	/*
 	 * monitoredVal : valore della variablie controllata dall'allarme
 	 * time			: tempo espresso in mill usato per gestire i timer dell'allarme
 	 */
-	public void run() {
-		while(true) {
+	public void check() {
 		if(this.isActive ) {
-			long monitoredVal=mySystem.getValue(this.valID);
+			double monitoredVal=mySystem.getValue(this.valID);
 			//ALARM CONDITION RISING
-			if ( (monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.alarmCondition && this.alarmConditionStart==0) {
+			if ( (monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.alarmCondition) {
 				this.alarmCondition=true;
+				updateMonitor(1);
 				this.alarmConditionStart=System.currentTimeMillis();
 			}
 			//DELAYED ALARM NOT RISING
-			else if(this.alarmCondition && !(monitoredVal<this.max_th || monitoredVal>this.min_th) && !this.isLatching && !this.visualAlarm ){
+			if(this.alarmCondition && !(monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.isLatching && !this.visualAlarm ){
 				//short audio burst and log are mandatory
 				this.alarmCondition=false;
+				updateMonitor(0);
 				this.alarmConditionStart=0;
 			}
 			//DELAYED ALARM START COND
-			else if(this.alarmCondition && (monitoredVal>this.max_th || monitoredVal<this.min_th) && System.currentTimeMillis()-this.alarmConditionStart>this.alarmDelay) {
+			if(this.alarmCondition && !this.visualAlarm &&(monitoredVal>this.max_th || monitoredVal<this.min_th) && System.currentTimeMillis()-this.alarmConditionStart>this.alarmDelay) {
 				alarmOn(monitoredVal);
 			}
 			//ALARM AUTO RESET
-			else if(this.alarmCondition && !(monitoredVal<this.max_th || monitoredVal>this.min_th) && !this.isLatching && this.visualAlarm ){
+			if(this.alarmCondition && !(monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.isLatching && this.visualAlarm && System.currentTimeMillis()-this.alarmRiseTime>this.minimumAlarmTime){
 				alarmOff(monitoredVal);
 			}
 			
 			
 			//TIMED ACK RESET COND
 			if(this.acknowledged && this.isTimedAck && this.ackStartTime>0  && System.currentTimeMillis()-this.ackStartTime>this.timedAckLimit) {
+				Date date=new Date(System.currentTimeMillis());
+				System.out.println(date+" acknowledge for "+this.valID+" expired");
 				this.acknowledged=false;
 				this.ackStartTime=0;
+				this.monitor.ackLabel(false, this.valID);
 				//audio paused or off?
 				if( this.isAudioPaused && this.audioPausedTime>0  && !this.audioOff) {
 					this.audioAlarm= true;
@@ -85,22 +93,24 @@ public class Alarm implements Runnable{
 			//TODO alarm sonozeeeeeeeer timer check
 			}
 		}
-	}
 	
-	private void alarmOn(long monitoredVal) {
+	private void alarmOn(double monitoredVal) {
 		// this.alarmCondition=true; assert true
 		this.audioAlarm=true;
 		this.visualAlarm=true;
+		updateMonitor(2);
 		this.alarmRiseTime= System.currentTimeMillis();
 		Date date=new Date(this.alarmRiseTime);
 		System.out.println(date+" alarm "+this.valID+" risen with value "+ monitoredVal);
 	}
 	
-	private void alarmOff(long monitoredVal) {
+	private void alarmOff(double monitoredVal) {
 		this.alarmCondition=false;
+		this.alarmConditionStart=0;
 		this.audioAlarm=false;
 		this.visualAlarm=false;
-		this.alarmRiseTime= System.currentTimeMillis();
+		updateMonitor(0);
+		this.alarmRiseTime= System.currentTimeMillis(); //TODO ...
 		Date date=new Date(this.alarmRiseTime);
 		System.out.println(date+" alarm "+this.valID+" reset with value "+ monitoredVal);
 	}
@@ -143,8 +153,11 @@ public class Alarm implements Runnable{
 			this.audioAlarm=false;	
 			this.isAudioPaused=true;
 			this.audioPausedTime= System.currentTimeMillis();
+			this.ackStartTime=System.currentTimeMillis();
+			this.acknowledged=true;
 			Date date=new Date(this.audioPausedTime);
-			System.out.println(date+" alarm aduio "+this.valID+" paused");
+			System.out.println(date+" alarm "+this.valID+" acknowledged");
+			this.monitor.ackLabel(true, this.valID);
 		}
 	}
 	
@@ -175,5 +188,14 @@ public class Alarm implements Runnable{
 			this.isActive=true;
 			return true;}
 	}
+	
+	public void attachMonitor(Monitor m) {
+		this.monitor=m;
+	}
+	
+	private void updateMonitor(int a) {
+		this.monitor.alarmState(this.valID, a);}
+	
+	
 	
 }
