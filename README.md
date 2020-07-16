@@ -36,4 +36,5 @@ coloured buttons indicate the alarm status:
 - Green: no alarm
 - Orange: alarm condition rised but no alarm triggered
 - Red: visual and acustic alarm are triggered
+
 Clicking on a "red" signal will send a timed ack to the related alarm.
