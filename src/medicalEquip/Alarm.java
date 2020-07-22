@@ -21,7 +21,7 @@ public class Alarm{
 	private boolean audioAlarm = false;
 	private int alarmDelay; //based on prio or programmable?
 	private long minimumAlarmTime = 3000;
-	private long alarmRiseTime;
+	private long alarmRiseTime; // 0 if no alarm
 	//ACKNOWLEDGE
 	private boolean acknowledged=false;
 	private boolean isTimedAck=true;
@@ -69,7 +69,7 @@ public class Alarm{
 				alarmOn(monitoredVal);
 			}
 			//ALARM AUTO RESET
-			if(this.alarmCondition && !(monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.isLatching && this.visualAlarm && System.currentTimeMillis()-this.alarmRiseTime>this.minimumAlarmTime){
+			if(this.alarmCondition && !(monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.isLatching && this.visualAlarm && this.alarmRiseTime>0 && System.currentTimeMillis()-this.alarmRiseTime>this.minimumAlarmTime){
 				alarmOff(monitoredVal);
 			}
 			
@@ -94,6 +94,11 @@ public class Alarm{
 			}
 		}
 	
+	/**
+	 * Turn the alarm on.
+	 * Turn the sound on, the video alarm on, update the gui, save the trigger time and log the event
+	 * @param monitoredVal value that triggered the alarm for log message
+	 */
 	private void alarmOn(double monitoredVal) {
 		// this.alarmCondition=true; assert true
 		this.audioAlarm=true;
@@ -104,6 +109,11 @@ public class Alarm{
 		System.out.println(date+" alarm "+this.valID+" risen with value "+ monitoredVal);
 	}
 	
+	/**
+	 * Turn the alarm off.
+	 * Turn the visual and audio alarm off, update the gui, reset trigger time and log the event
+	 * @param monitoredVal last value that excluded the alarm for log message
+	 */
 	private void alarmOff(double monitoredVal) {
 		this.alarmCondition=false;
 		this.alarmConditionStart=0;
@@ -111,13 +121,14 @@ public class Alarm{
 		this.visualAlarm=false;
 		//TODO ack reset
 		updateMonitor(0);
-		this.alarmRiseTime= System.currentTimeMillis(); //TODO ...
-		Date date=new Date(this.alarmRiseTime);
+		this.alarmRiseTime= 0;
+		Date date=new Date(System.currentTimeMillis());
 		System.out.println(date+" alarm "+this.valID+" reset with value "+ monitoredVal);
 	}
 	
 	/*
-	 * pause audio marking time for logging and timers
+	 * Pause the audio alarm.
+	 * Pause the audio saving the time of this action for logging and timers.
 	 */
 	public void pauseAudio() {
 		if(this.audioAlarm && this.alarmCondition) {
@@ -130,7 +141,7 @@ public class Alarm{
 	}
 	
 	/*
-	 * disable audio func for this alarm, can be paired with an acustic reminder signal
+	 * disable audio func for this alarm, should be paired with an acustic reminder signal.
 	 */
 	public void disableAudio() {
 		this.audioOff=true;
@@ -166,10 +177,10 @@ public class Alarm{
 	
 	
 	/*
-	 * spegne l'allarme a prescindere che sia latching o meno
+	 * Reset a latching alarm
 	 */
 	public boolean alarmReset() {
-		if (this.alarmCondition) {
+		if (this.isLatching) {
 			this.alarmCondition=false;
 			return true;
 		}
