@@ -17,6 +17,8 @@ public class MeSystem implements Runnable{
 	private Alarm[] alarmSet;
 	private Monitor myMonitor=null;
 	private String[] ranges;
+	private boolean autoUpdate = true;
+	public int dataLine=0;
 	public MeSystem() throws IOException {
 		this.machineOn=true;
 		String row;
@@ -31,18 +33,11 @@ public class MeSystem implements Runnable{
 		while((row = csvReader.readLine()) != null) {
 			String[] data =row.split(",");
 			this.alarmSet[i]= new Alarm(Boolean.parseBoolean(data[0]),Integer.parseInt(data[1])*1000,"LOW", Integer.parseInt(data[2]),Integer.parseInt(data[3]), i,this);
-			s="max: "+Integer.parseInt(data[2])+"<br/> min: "+Integer.parseInt(data[3]);
-			this.ranges[i]=s;
 			this.data[i]=ThreadLocalRandom.current().nextLong(Integer.parseInt(data[3]),Integer.parseInt(data[2]));
 			i++;
 		}		
+		this.data[1]=42;
 		csvReader.close();
-	}
-	
-	private void startAlarms() {
-		for(Alarm a: this.alarmSet) {
-			a.attachMonitor(this.myMonitor);
-		}
 	}
 	
 	public double getValue(int ID) {
@@ -51,7 +46,6 @@ public class MeSystem implements Runnable{
 	
 	public void attachMonitor(Monitor m) {
 		this.myMonitor=m;
-		this.myMonitor.setRanges(this.ranges);
 	}
 	
 	
@@ -59,11 +53,22 @@ public class MeSystem implements Runnable{
 	 * necessari valori con rumore simil-perlin per garantire possibili allarmi prolungati
 	 */
 	private void updateValues() {
+		if(this.autoUpdate ) {
 		for (int i = 0; i < this.data.length; i++) {
 			this.data[i]+= ThreadLocalRandom.current().nextDouble()-0.5;
 			if (this.data[i]<0) this.data[i]=0;	if (this.data[i]>100) this.data[i]=100;
+		}}
+		else {
+			//READ FROM FILE or manual control
 		}
 	}
+	
+	public void changeValues(int sel,int value) {
+		this.data[sel]+= value;
+		if (this.data[sel]<0) this.data[sel]=0;	if (this.data[sel]>100) this.data[sel]=100;
+	}
+	
+	
 	
 
 	 public void run() {
@@ -85,7 +90,6 @@ public class MeSystem implements Runnable{
 		MeSystem mesys = new MeSystem();
 		Monitor m= new Monitor(mesys,mesys.alarmSet);
 		mesys.attachMonitor(m);
-		mesys.startAlarms();
 		Thread subsystemUpdate = new Thread(mesys);
 		subsystemUpdate.start();
 	

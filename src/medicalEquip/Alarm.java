@@ -1,6 +1,7 @@
 package medicalEquip;
 import java.util.Date;
 
+import monitor.AlarmModule;
 import monitor.Monitor;
 
 public class Alarm{
@@ -11,7 +12,7 @@ public class Alarm{
 	private boolean isLatching;
 	private double max_th;
 	private double min_th;
-	private int valID;
+	public int valID;
 	private String priority;
 	//ALARM
 	private boolean alarmCondition;
@@ -31,6 +32,9 @@ public class Alarm{
 	private boolean audioOff =false;
 	private boolean isAudioPaused =false;
 	private long audioPausedTime;	//TODO ridondante?
+	//MONITOR
+	private AlarmModule alarmMod;
+	private boolean waitingReset=false;
 	
 	public Alarm(boolean latch,int delay, String prio,int max,int min,int id,MeSystem s){
 		this.isLatching = latch;
@@ -50,27 +54,44 @@ public class Alarm{
 	 */
 	public void check() {
 		if(this.isActive ) {
-			double monitoredVal=mySystem.getValue(this.valID);
+			double monitoredVal=this.mySystem.getValue(this.valID);
 			//ALARM CONDITION RISING
 			if ( (monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.alarmCondition) {
 				this.alarmCondition=true;
-				updateMonitor(1);
+				if(!this.waitingReset) {
+					updateMonitor(1);
+				}
 				this.alarmConditionStart=System.currentTimeMillis();
 			}
 			//DELAYED ALARM NOT RISING
-			if(this.alarmCondition && !(monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.isLatching && !this.visualAlarm ){
+			if(this.alarmCondition && !(monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.visualAlarm ){
 				//short audio burst and log are mandatory
+				if(!this.waitingReset) {
 				this.alarmCondition=false;
-				updateMonitor(0);
+				updateMonitor(0);}
 				this.alarmConditionStart=0;
 			}
 			//DELAYED ALARM START COND
-			if(this.alarmCondition && !this.visualAlarm &&(monitoredVal>this.max_th || monitoredVal<this.min_th) && System.currentTimeMillis()-this.alarmConditionStart>this.alarmDelay) {
+			if(this.alarmCondition && (!this.visualAlarm || (this.visualAlarm && this.waitingReset) )&&(monitoredVal>this.max_th || monitoredVal<this.min_th) && System.currentTimeMillis()-this.alarmConditionStart>this.alarmDelay) {
+				if(this.waitingReset) {
+					this.waitingReset=false;
+					Date date=new Date(this.alarmRiseTime);
+					System.out.println(date+" alarm "+this.valID+" risen again with value "+ monitoredVal+" wile waiting for reset.");
+				}
 				alarmOn(monitoredVal);
 			}
 			//ALARM AUTO RESET
 			if(this.alarmCondition && !(monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.isLatching && this.visualAlarm && this.alarmRiseTime>0 && System.currentTimeMillis()-this.alarmRiseTime>this.minimumAlarmTime){
 				alarmOff(monitoredVal);
+			}
+			//LATCHING ALARM CONDITION CLEAR
+			if(this.alarmCondition && !(monitoredVal>this.max_th || monitoredVal<this.min_th) && this.isLatching && this.visualAlarm && this.alarmRiseTime>0 && System.currentTimeMillis()-this.alarmRiseTime>this.minimumAlarmTime){
+				this.updateMonitor(3);
+				if(!this.waitingReset) {
+				Date date=new Date(System.currentTimeMillis());
+				System.out.println(date+" alarm "+this.valID+" condition clear. Alarm is latching manual reset needed.");
+				}
+				this.waitingReset=true;
 			}
 			
 			
@@ -80,7 +101,7 @@ public class Alarm{
 				System.out.println(date+" acknowledge for "+this.valID+" expired");
 				this.acknowledged=false;
 				this.ackStartTime=0;
-				this.monitor.ackLabel(false, this.valID);
+				this.alarmMod.acknowledgeUpdate(false);
 				//audio paused or off?
 				if( this.isAudioPaused && this.audioPausedTime>0  && !this.audioOff) {
 					this.audioAlarm= true;
@@ -169,7 +190,7 @@ public class Alarm{
 			this.acknowledged=true;
 			Date date=new Date(this.audioPausedTime);
 			System.out.println(date+" alarm "+this.valID+" acknowledged");
-			this.monitor.ackLabel(true, this.valID);
+			this.alarmMod.acknowledgeUpdate(true);
 		}
 	}
 	
@@ -181,7 +202,7 @@ public class Alarm{
 	 */
 	public boolean alarmReset() {
 		if (this.isLatching) {
-			this.alarmCondition=false;
+			this.alarmOff(this.mySystem.getValue(this.valID));
 			return true;
 		}
 		else return false;
@@ -191,22 +212,34 @@ public class Alarm{
 	/*
 	 * cicla fra allarme attivo e disattivo per escluderlo o riattivarlo
 	 */
-	public boolean alarmInactivationStateSwitch(boolean audio, boolean alarmSignal) {
-		if(this.isActive) {
+	public void alarmInactivationStateSwitch(boolean status) {
+		if(this.isActive && !status) {
 			this.isActive=false;
-			return false;
 		}
-		else {
+		else if(!this.isActive && status){
 			this.isActive=true;
-			return true;}
+			}
 	}
 	
-	public void attachMonitor(Monitor m) {
-		this.monitor=m;
+	public void attachMonitor(AlarmModule m) {
+		this.alarmMod = m;
 	}
 	
 	private void updateMonitor(int a) {
-		this.monitor.alarmState(this.valID, a);}
+		this.alarmMod.alarmState(a);
+	
+	}
+	
+	public String getRanges() {
+		String s="max: "+String.valueOf(this.max_th)+"<br/> min: "+String.valueOf(this.min_th);
+		return s;
+	}
+	
+	public boolean isLatching() {
+		return this.isLatching;
+	}
+	
+	
 	
 	
 	
