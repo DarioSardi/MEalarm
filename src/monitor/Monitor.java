@@ -29,10 +29,11 @@ public class Monitor {
 	AlarmModule[] AlarmModuleList;
 	MeSystem me;
 	JComboBox<String> alarms;
+	JFrame frame;
 	public Monitor(MeSystem me, Alarm[] alarmSet) {
 		this.me=me;
 		this.AlarmModuleList= new AlarmModule[alarmSet.length];
-		JFrame frame = new JFrame();
+		this.frame = new JFrame();
 		JPanel panel = new JPanel();
 		panel.setBorder(BorderFactory.createEmptyBorder(30,30,30,30));
 		panel.setLayout(new GridLayout(0,1));
@@ -77,14 +78,19 @@ public class Monitor {
 			this.AlarmModuleList[i]=test;
 		}
 		
-		frame.add(panel,BorderLayout.CENTER);
-		frame.setSize(520,600);
-		frame.setMinimumSize(new Dimension(520,600));
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setTitle("value monitor");
-		frame.pack();
-		frame.setVisible(true);
+		this.frame.add(panel,BorderLayout.CENTER);
+		this.frame.setSize(520,600);
+		this.frame.setMinimumSize(new Dimension(520,600));
+		this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.frame.setTitle("value monitor");
+		this.frame.pack();
+		this.frame.setVisible(true);
 		
+	}
+	
+	public Monitor(MeSystem me, Alarm[] alarmSet,boolean visible) {
+		this(me, alarmSet);
+		this.frame.setVisible(false);
 	}
 	
 	

@@ -1,6 +1,7 @@
 package medicalEquip;
 import java.util.Date;
 
+
 import monitor.AlarmModule;
 import monitor.Monitor;
 
@@ -49,8 +50,8 @@ public class Alarm{
 	}
 	
 	/*
-	 * monitoredVal : valore della variablie controllata dall'allarme
-	 * time			: tempo espresso in mill usato per gestire i timer dell'allarme
+	 * main update function of the alarm.
+	 * use this function inside the main loop of the program keeping the values updated in the MeSystem.
 	 */
 	public void check() {
 		if(this.isActive ) {
@@ -66,8 +67,8 @@ public class Alarm{
 			//DELAYED ALARM NOT RISING
 			if(this.alarmCondition && !(monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.visualAlarm ){
 				//short audio burst and log are mandatory
-				if(!this.waitingReset) {
 				this.alarmCondition=false;
+				if(!this.waitingReset) {
 				updateMonitor(0);}
 				this.alarmConditionStart=0;
 			}
@@ -110,8 +111,6 @@ public class Alarm{
 				}
 				
 			}
-			
-			//TODO alarm sonozeeeeeeeer timer check
 			}
 		}
 	
@@ -122,7 +121,9 @@ public class Alarm{
 	 */
 	private void alarmOn(double monitoredVal) {
 		// this.alarmCondition=true; assert true
+		if(!this.audioOff && !this.isAudioPaused) {
 		this.audioAlarm=true;
+		}
 		this.visualAlarm=true;
 		updateMonitor(2);
 		this.alarmRiseTime= System.currentTimeMillis();
@@ -150,7 +151,6 @@ public class Alarm{
 	/*
 	 * Pause the audio alarm.
 	 * Pause the audio saving the time of this action for logging and timers.
-	 */
 	public void pauseAudio() {
 		if(this.audioAlarm && this.alarmCondition) {
 			this.audioAlarm=false;	
@@ -159,7 +159,7 @@ public class Alarm{
 			Date date=new Date(this.audioPausedTime);
 			System.out.println(date+" alarm aduio "+this.valID+" paused");
 		}
-	}
+	}*/
 	
 	/*
 	 * disable audio func for this alarm, should be paired with an acustic reminder signal.
@@ -174,6 +174,9 @@ public class Alarm{
 	 */
 	public void enableAudio() {
 		this.audioOff=false;
+		if(this.visualAlarm) {
+			this.audioAlarm=true;
+		}
 	}
 	
 	
@@ -203,6 +206,7 @@ public class Alarm{
 	public boolean alarmReset() {
 		if (this.isLatching) {
 			this.alarmOff(this.mySystem.getValue(this.valID));
+			this.waitingReset=false;
 			return true;
 		}
 		else return false;
@@ -239,8 +243,31 @@ public class Alarm{
 		return this.isLatching;
 	}
 	
+	/*
+	 * getter for testing
+	 */
+	public boolean isAlarmCondition() {
+		return this.alarmCondition;
+	}
+	/*
+	 * getter for testing
+	 */
+	public boolean isVisualAlarm() {
+		return this.visualAlarm;
+	}	
+	/*
+	 * getter for testing
+	 */
+	public boolean isAudioAlarm() {
+		return this.audioAlarm;
+	}
 	
-	
+	/*
+	 * getter for testing
+	 */
+	public boolean isWaitingReset() {
+		return this.waitingReset;
+	}
 	
 	
 }

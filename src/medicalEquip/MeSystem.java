@@ -3,10 +3,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
-
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
 
 import monitor.Monitor;
 
@@ -14,10 +11,9 @@ public class MeSystem implements Runnable{
 	int ALARMSNUMBER =4;
 	private boolean machineOn;
 	private double[] data;
-	private Alarm[] alarmSet;
+	public Alarm[] alarmSet;
 	private Monitor myMonitor=null;
-	private String[] ranges;
-	private boolean autoUpdate = true;
+	public boolean autoUpdate = true;
 	public int dataLine=0;
 	public MeSystem() throws IOException {
 		this.machineOn=true;
@@ -27,8 +23,24 @@ public class MeSystem implements Runnable{
 		int ALARMSNUMBER = Integer.valueOf(csvReader.readLine());
 		this.data = new double[ALARMSNUMBER];
 		this.alarmSet = new Alarm[ALARMSNUMBER];
-		this.ranges= new String[ALARMSNUMBER];
-		String s;
+		int i=0;
+		while((row = csvReader.readLine()) != null) {
+			String[] data =row.split(",");
+			this.alarmSet[i]= new Alarm(Boolean.parseBoolean(data[0]),Integer.parseInt(data[1])*1000,"LOW", Integer.parseInt(data[2]),Integer.parseInt(data[3]), i,this);
+			this.data[i]=ThreadLocalRandom.current().nextLong(Integer.parseInt(data[3]),Integer.parseInt(data[2]));
+			i++;
+		}		
+		//this.data[1]=42;
+		csvReader.close();
+	}
+	public MeSystem(String file) throws IOException {
+		this.machineOn=true;
+		String row;
+		URL url = getClass().getResource(file);
+		BufferedReader csvReader = new BufferedReader(new FileReader(url.getPath()));
+		int ALARMSNUMBER = Integer.valueOf(csvReader.readLine());
+		this.data = new double[ALARMSNUMBER];
+		this.alarmSet = new Alarm[ALARMSNUMBER];
 		int i=0;
 		while((row = csvReader.readLine()) != null) {
 			String[] data =row.split(",");
@@ -68,6 +80,18 @@ public class MeSystem implements Runnable{
 		if (this.data[sel]<0) this.data[sel]=0;	if (this.data[sel]>100) this.data[sel]=100;
 	}
 	
+	public void setValues(int sel,int value) {
+		if(value>100) {
+			this.data[sel]=100;
+		}
+		else if (value<0) {
+			this.data[sel]=0;	
+		}
+		else {
+			this.data[sel]=value;	
+		}
+	}
+	
 	
 	
 
@@ -82,6 +106,16 @@ public class MeSystem implements Runnable{
 					 a.check();
 				 }
 			 }
+		 }
+	 }
+	 
+	 /*
+	  * for testing only
+	  */
+	 public void runOnce() {
+		 this.myMonitor.updateData(this.data);
+		 for(Alarm a: this.alarmSet) {
+			 a.check();
 		 }
 	 }
 	 
