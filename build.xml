@@ -13,7 +13,7 @@
         <javac srcdir="${src}" destdir="${build}" excludes="**/*Test.java" includeAntRuntime="no"/>
     </target>
  
-    <target name="dist" depends="compile" description="generate the distribution">
+    <target name="test" depends="compile" description="generate the distribution">
         <buildnumber />
         <!-- Create the distribution directory -->
         <mkdir dir="${dist}/lib" />
