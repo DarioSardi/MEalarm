@@ -1,4 +1,4 @@
-monitor\AlarmModule.class
 medicalEquip\Alarm.class
 medicalEquip\MeSystem.class
+monitor\AlarmModule.class
 monitor\Monitor.class

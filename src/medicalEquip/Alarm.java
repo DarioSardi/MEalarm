@@ -3,17 +3,16 @@ import java.util.Date;
 
 
 import monitor.AlarmModule;
-import monitor.Monitor;
 
 public class Alarm{
 
 	private MeSystem mySystem;
-	private Monitor monitor;
 	//SETTINGS
 	private boolean isLatching;
 	private double max_th;
 	private double min_th;
 	public int valID;
+	@SuppressWarnings("unused")
 	private String priority;
 	//ALARM
 	private boolean alarmCondition;

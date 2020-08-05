@@ -1,29 +1,19 @@
 package monitor;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingConstants;
 
 import medicalEquip.Alarm;
 import medicalEquip.MeSystem;
-
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
-
-import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 
 public class Monitor {
 	AlarmModule[] AlarmModuleList;
@@ -32,7 +22,7 @@ public class Monitor {
 	JFrame frame;
 	
 	public Monitor() {
-		System.out.println("empty monitor created");
+		System.out.println("empty monitor created for manual testing");
 	}
 	
 	public Monitor(MeSystem me, Alarm[] alarmSet) {

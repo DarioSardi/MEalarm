@@ -15,8 +15,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import com.sun.prism.Image;
-
 import medicalEquip.Alarm;
 import medicalEquip.MeSystem;
 

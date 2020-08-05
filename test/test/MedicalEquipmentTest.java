@@ -2,18 +2,22 @@ package test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 
+import medicalEquip.Alarm;
 import medicalEquip.MeSystem;
+import monitor.AlarmModule;
 import monitor.Monitor;
 
 /*
- * not testing gui so using a monitor stub to simulate interactions, using a mock just for exercise.
+ * not testing gui so mocks for that part.
  */
 class MedicalEquipmentTest {
 	
@@ -22,14 +26,20 @@ class MedicalEquipmentTest {
 	@Nested
 	class NonLatchingTest{ 
 		MeSystem mesys;
+		
+		@Mock
 		Monitor m;
+		
 		@BeforeEach 
 		void setup() throws IOException {
 			this.mesys = new MeSystem("confFiles/alarmsDataTest.txt");
 			//false,2,20,5,0
 			//true,2,40,10,1
-
-			this.m= new Monitor(this.mesys,this.mesys.alarmSet);
+			m = mock(Monitor.class);
+			AlarmModule am = mock(AlarmModule.class);
+			for(Alarm a:this.mesys.alarmSet) {
+				a.attachMonitor(am);
+			}
 			this.mesys.attachMonitor(this.m);
 			this.mesys.autoUpdate = false;
 			this.mesys.runOnce();
@@ -157,7 +167,11 @@ class MedicalEquipmentTest {
 			this.mesys = new MeSystem("confFiles/alarmsDataTest.txt");
 			//false,2,20,5,0
 			//true,2,40,10,1
-			this.m= new Monitor(this.mesys,this.mesys.alarmSet);
+			m = mock(Monitor.class);
+			AlarmModule am = mock(AlarmModule.class);
+			for(Alarm a:this.mesys.alarmSet) {
+				a.attachMonitor(am);
+			}
 			this.mesys.attachMonitor(this.m);
 			this.mesys.autoUpdate = false;
 			this.mesys.runOnce();
