@@ -84,6 +84,10 @@ public class Alarm{
 			//ALARM AUTO RESET
 			if(this.alarmCondition && !(monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.isLatching && this.visualAlarm && this.alarmRiseTime>0 && System.currentTimeMillis()-this.alarmRiseTime>this.minimumAlarmTime){
 				alarmOff(monitoredVal);
+				assert this.alarmCondition==false : "alarm reset but alarmCond still there";
+				assert this.acknowledged==false : "alarm reset but still acknowledged";
+				assert this.audioAlarm==false : "alarm reset but audio still there";
+				assert this.visualAlarm==false : "alarm reset but video still there";
 			}
 			//LATCHING ALARM CONDITION CLEAR
 			if(this.alarmCondition && !(monitoredVal>this.max_th || monitoredVal<this.min_th) && this.isLatching && this.visualAlarm && this.alarmRiseTime>0 && System.currentTimeMillis()-this.alarmRiseTime>this.minimumAlarmTime){
@@ -100,15 +104,7 @@ public class Alarm{
 			if(this.acknowledged && this.isTimedAck && this.ackStartTime>0  && System.currentTimeMillis()-this.ackStartTime>this.timedAckLimit) {
 				Date date=new Date(System.currentTimeMillis());
 				System.out.println(date+" acknowledge for "+this.valID+" expired");
-				this.acknowledged=false;
-				this.ackStartTime=0;
-				this.alarmMod.acknowledgeUpdate(false);
-				//audio paused or off?
-				if( this.isAudioPaused && this.audioPausedTime>0  && !this.audioOff) {
-					this.audioAlarm= true;
-					this.audioPausedTime=0;
-					this.isAudioPaused =false;
-				}
+				resetAck();
 				
 			}
 			}
@@ -120,9 +116,9 @@ public class Alarm{
 	 * @param monitoredVal value that triggered the alarm for log message
 	 */
 	private void alarmOn(double monitoredVal) {
-		// this.alarmCondition=true; assert true
+		assert this.alarmCondition=true : "alarm turning on without alarm condition";
 		if(!this.audioOff && !this.isAudioPaused) {
-		this.audioAlarm=true;
+			this.audioAlarm=true;
 		}
 		this.visualAlarm=true;
 		updateMonitor(2);
@@ -137,11 +133,13 @@ public class Alarm{
 	 * @param monitoredVal last value that excluded the alarm for log message
 	 */
 	private void alarmOff(double monitoredVal) {
+		assert this.alarmCondition==true : "alarm turning off without alarm condition";
 		this.alarmCondition=false;
 		this.alarmConditionStart=0;
+		resetAck();
 		this.audioAlarm=false;
+		assert this.visualAlarm==true : "alarm on without visual signal!";
 		this.visualAlarm=false;
-		//TODO ack reset
 		updateMonitor(0);
 		this.alarmRiseTime= 0;
 		Date date=new Date(System.currentTimeMillis());
@@ -194,6 +192,18 @@ public class Alarm{
 			Date date=new Date(this.audioPausedTime);
 			System.out.println(date+" alarm "+this.valID+" acknowledged");
 			this.alarmMod.acknowledgeUpdate(true);
+		}
+	}
+	
+	private void resetAck(){
+		this.acknowledged=false;
+		this.ackStartTime=0;
+		this.alarmMod.acknowledgeUpdate(false);
+		//audio paused or off?
+		if( this.isAudioPaused && this.audioPausedTime>0  && !this.audioOff) {
+			this.audioAlarm= true;
+			this.audioPausedTime=0;
+			this.isAudioPaused =false;
 		}
 	}
 	

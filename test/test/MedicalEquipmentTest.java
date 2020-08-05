@@ -1,14 +1,20 @@
-package medicalEquipTest;
+package test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
 import medicalEquip.MeSystem;
 import monitor.Monitor;
 
+/*
+ * not testing gui so using a monitor stub to simulate interactions, using a mock just for exercise.
+ */
 class MedicalEquipmentTest {
 	@Nested
 	class NonLatchingTest{ 
@@ -19,7 +25,8 @@ class MedicalEquipmentTest {
 			this.mesys = new MeSystem("../data/alarmsDataTest.txt");
 			//false,2,20,5,0
 			//true,2,40,10,1
-			this.m= new Monitor(this.mesys,this.mesys.alarmSet,false);
+
+			this.m= new MonitorStub(this.mesys,this.mesys.alarmSet);
 			this.mesys.attachMonitor(this.m);
 			this.mesys.autoUpdate = false;
 			this.mesys.runOnce();
@@ -147,7 +154,7 @@ class MedicalEquipmentTest {
 			this.mesys = new MeSystem("../data/alarmsDataTest.txt");
 			//false,2,20,5,0
 			//true,2,40,10,1
-			this.m= new Monitor(this.mesys,this.mesys.alarmSet,false);
+			this.m= new MonitorStub(this.mesys,this.mesys.alarmSet);
 			this.mesys.attachMonitor(this.m);
 			this.mesys.autoUpdate = false;
 			this.mesys.runOnce();

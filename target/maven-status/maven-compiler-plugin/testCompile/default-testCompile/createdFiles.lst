@@ -1,0 +1,5 @@
+test\MedicalEquipmentTest$NonLatchingTest.class
+test\MedicalEquipmentTest$LatchingTest.class
+test\AlarmModuleStub.class
+test\MonitorStub.class
+test\MedicalEquipmentTest.class

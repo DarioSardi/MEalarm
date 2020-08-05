@@ -21,7 +21,6 @@ public class MeSystem implements Runnable{
 		URL url = getClass().getResource("../data/alarmsData.txt");
 		BufferedReader csvReader = new BufferedReader(new FileReader(url.getPath()));
 		int ALARMSNUMBER = Integer.valueOf(csvReader.readLine());
-		System.out.println("i'm alive");
 		this.data = new double[ALARMSNUMBER];
 		this.alarmSet = new Alarm[ALARMSNUMBER];
 		int i=0;
