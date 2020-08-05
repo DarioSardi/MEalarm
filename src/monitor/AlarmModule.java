@@ -18,6 +18,7 @@ import javax.swing.SwingConstants;
 import com.sun.prism.Image;
 
 import medicalEquip.Alarm;
+import medicalEquip.MeSystem;
 
 public class AlarmModule {
 	JLabel value 	= new JLabel("--",SwingConstants.CENTER);
@@ -28,9 +29,11 @@ public class AlarmModule {
 	JButton reset	= new JButton("reset latch alarm");
 	JPanel extraPanel = new JPanel();
 	JPanel myPanel = new JPanel();
-	ImageIcon alarmOff = new ImageIcon(ImageIcon.class.getResource("/monitor/audioOff.png"));
-	ImageIcon alarmOn = new ImageIcon(ImageIcon.class.getResource("/monitor/audioOn.png"));
-	ImageIcon disabled = new ImageIcon(ImageIcon.class.getResource("/monitor/disabled.png"));
+	final ClassLoader loader = MeSystem.class.getClassLoader();
+	 
+	ImageIcon alarmOff = new ImageIcon(ImageIcon.class.getResource("/images/audioOff.png"));
+	ImageIcon alarmOn = new ImageIcon(ImageIcon.class.getResource("/images/audioOn.png"));
+	ImageIcon disabled = new ImageIcon(ImageIcon.class.getResource("/images/disabled.png"));
 	
 	Alarm a;
 	Monitor monitor;
@@ -98,9 +101,9 @@ public class AlarmModule {
 	
 	private void updateIcons() {
 		if(this.lastScale!=this.status.getHeight()) {
-			this.alarmOff =this.getScaledImage("/monitor/audioOff.png");
-			this.alarmOn=this.getScaledImage("/monitor/audioOn.png");	
-			this.disabled=this.getScaledImage("/monitor/disabled.png");	
+			this.alarmOff =this.getScaledImage("/images/audioOff.png");
+			this.alarmOn=this.getScaledImage("/images/audioOn.png");	
+			this.disabled=this.getScaledImage("/images/disabled.png");	
 			
 		}		
 	}

@@ -16,13 +16,16 @@ import monitor.Monitor;
  * not testing gui so using a monitor stub to simulate interactions, using a mock just for exercise.
  */
 class MedicalEquipmentTest {
+	
+	
+	
 	@Nested
 	class NonLatchingTest{ 
 		MeSystem mesys;
 		Monitor m;
 		@BeforeEach 
 		void setup() throws IOException {
-			this.mesys = new MeSystem("../alarmsDataTest.txt");
+			this.mesys = new MeSystem("confFiles/alarmsDataTest.txt");
 			//false,2,20,5,0
 			//true,2,40,10,1
 
@@ -150,8 +153,8 @@ class MedicalEquipmentTest {
 		MeSystem mesys;
 		Monitor m;
 		@BeforeEach 
-		void setup() throws IOException {
-			this.mesys = new MeSystem("../alarmsDataTest.txt");
+		void setup() throws IOException {			
+			this.mesys = new MeSystem("confFiles/alarmsDataTest.txt");
 			//false,2,20,5,0
 			//true,2,40,10,1
 			this.m= new MonitorStub(this.mesys,this.mesys.alarmSet);

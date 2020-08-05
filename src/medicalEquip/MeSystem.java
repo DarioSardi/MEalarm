@@ -18,7 +18,8 @@ public class MeSystem implements Runnable{
 	public MeSystem() throws IOException {
 		this.machineOn=true;
 		String row;
-		URL url = getClass().getResource("../alarmsData.txt");
+		final ClassLoader loader = MeSystem.class.getClassLoader();
+		URL url = loader.getResource("confFiles/alarmsData.txt");
 		BufferedReader csvReader = new BufferedReader(new FileReader(url.getPath()));
 		int ALARMSNUMBER = Integer.valueOf(csvReader.readLine());
 		this.data = new double[ALARMSNUMBER];
@@ -36,7 +37,8 @@ public class MeSystem implements Runnable{
 	public MeSystem(String file) throws IOException {
 		this.machineOn=true;
 		String row;
-		URL url = getClass().getResource(file);
+		final ClassLoader loader = MeSystem.class.getClassLoader();
+		URL url = loader.getResource(file);
 		BufferedReader csvReader = new BufferedReader(new FileReader(url.getPath()));
 		int ALARMSNUMBER = Integer.valueOf(csvReader.readLine());
 		this.data = new double[ALARMSNUMBER];
