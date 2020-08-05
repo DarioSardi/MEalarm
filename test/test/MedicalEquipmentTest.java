@@ -22,7 +22,7 @@ class MedicalEquipmentTest {
 		Monitor m;
 		@BeforeEach 
 		void setup() throws IOException {
-			this.mesys = new MeSystem("../data/alarmsDataTest.txt");
+			this.mesys = new MeSystem("../alarmsDataTest.txt");
 			//false,2,20,5,0
 			//true,2,40,10,1
 
@@ -151,7 +151,7 @@ class MedicalEquipmentTest {
 		Monitor m;
 		@BeforeEach 
 		void setup() throws IOException {
-			this.mesys = new MeSystem("../data/alarmsDataTest.txt");
+			this.mesys = new MeSystem("../alarmsDataTest.txt");
 			//false,2,20,5,0
 			//true,2,40,10,1
 			this.m= new MonitorStub(this.mesys,this.mesys.alarmSet);
