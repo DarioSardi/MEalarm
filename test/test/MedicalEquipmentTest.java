@@ -29,7 +29,7 @@ class MedicalEquipmentTest {
 			//false,2,20,5,0
 			//true,2,40,10,1
 
-			this.m= new MonitorStub(this.mesys,this.mesys.alarmSet);
+			this.m= new Monitor(this.mesys,this.mesys.alarmSet);
 			this.mesys.attachMonitor(this.m);
 			this.mesys.autoUpdate = false;
 			this.mesys.runOnce();
@@ -157,7 +157,7 @@ class MedicalEquipmentTest {
 			this.mesys = new MeSystem("confFiles/alarmsDataTest.txt");
 			//false,2,20,5,0
 			//true,2,40,10,1
-			this.m= new MonitorStub(this.mesys,this.mesys.alarmSet);
+			this.m= new Monitor(this.mesys,this.mesys.alarmSet);
 			this.mesys.attachMonitor(this.m);
 			this.mesys.autoUpdate = false;
 			this.mesys.runOnce();
