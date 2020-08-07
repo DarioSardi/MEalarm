@@ -193,6 +193,7 @@ class MedicalEquipmentTest {
 			Thread.sleep(3000);
 			//Waiting reset
 			assertTrue(this.mesys.alarmSet[1].isWaitingReset());
+			Thread.sleep(1000);
 			this.mesys.alarmSet[1].alarmReset();
 			assertFalse(this.mesys.alarmSet[1].isAlarmCondition());
 			assertFalse(this.mesys.alarmSet[1].isWaitingReset());

@@ -5,6 +5,7 @@ import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
 import javax.swing.BorderFactory;
@@ -42,7 +43,13 @@ public class AlarmModule {
 		this.myPanel.setLayout(new GridLayout(0,5));
 		this.myPanel.add(this.value);
 		this.b.setBackground(Color.GREEN);
-		this.b.addActionListener(event -> ackClick(event));
+		//this.b.addActionListener(event -> ackClick(event));
+		this.b.addActionListener(new ActionListener( ) {
+		      public void actionPerformed( ActionEvent e )
+		      {
+		    	  ackClick(e);
+		      }
+		    });
 		this.myPanel.add(this.b);
 		this.myPanel.add(this.status);
 		this.myPanel.add(this.range);
@@ -60,11 +67,21 @@ public class AlarmModule {
 	public void connectAlarm(Alarm al) {
 		this.a=al;
 		this.a.attachMonitor(this);
-		this.disable.addActionListener(event -> disableCheck(event));
+		this.disable.addActionListener(new ActionListener( ) {
+		      public void actionPerformed( ActionEvent e )
+		      {
+		    	 disableCheck(e);
+		      }
+		    });
 		if(this.a.isLatching()) {
 			this.extraPanel.setLayout(new GridLayout(2,0));
 			this.extraPanel.add(this.disable);
-			this.reset.addActionListener(event -> this.a.alarmReset());
+			this.reset.addActionListener(new ActionListener( ) {
+			      public void actionPerformed( ActionEvent e )
+			      {
+			    	  a.alarmReset();
+			      }
+			    });
 			this.extraPanel.add(this.reset);
 			this.myPanel.add(extraPanel);
 		}
@@ -154,4 +171,5 @@ public class AlarmModule {
 	    g2.dispose();
 	    return new ImageIcon(resizedImg);
 	}
+	
 }

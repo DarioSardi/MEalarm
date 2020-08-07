@@ -1,40 +1,39 @@
 package medicalEquip;
 import java.util.Date;
-
-
 import monitor.AlarmModule;
 
 public class Alarm{
-
-	private MeSystem mySystem;
+	
+	protected MeSystem mySystem;
 	//SETTINGS
-	private boolean isLatching;
-	private double max_th;
-	private double min_th;
+	protected /*@ spec_public non_null */boolean isLatching;
+	protected/*@ non_null */double max_th;
+	protected/*@ non_null */double min_th;
 	public int valID;
 	@SuppressWarnings("unused")
 	private String priority;
 	//ALARM
-	private boolean alarmCondition;
-	private long alarmConditionStart=0;
-	private boolean visualAlarm = false;
-	private boolean isActive=true;
-	private boolean audioAlarm = false;
-	private int alarmDelay; //based on prio or programmable?
-	private long minimumAlarmTime = 3000;
-	private long alarmRiseTime; // 0 if no alarm
+	protected /*@ spec_public non_null */boolean alarmCondition;
+	protected long alarmConditionStart=0;
+	protected /*@ spec_public @*/boolean visualAlarm = false;
+	protected /*@ spec_public @*/ boolean isActive=true;
+	protected /*@ spec_public @*/boolean audioAlarm = false;
+	protected int alarmDelay; 
+	protected long minimumAlarmTime = 3000;
+	protected /*@ spec_public @*/ long alarmRiseTime; // 0 if no alarm
+	//@ public invariant alarmRiseTime>=0;
 	//ACKNOWLEDGE
-	private boolean acknowledged=false;
+	protected /*@ spec_public @*/boolean acknowledged=false;
 	private boolean isTimedAck=true;
-	private long ackStartTime=0; //TODO init TBD
-	private long timedAckLimit=10000; //1 min max time of ack before alarms goes off again
+	protected long ackStartTime=0; 
+	private long timedAckLimit=10000; 
 	//AUDIO PAUSED
-	private boolean audioOff =false;
-	private boolean isAudioPaused =false;
-	private long audioPausedTime;	//TODO ridondante?
+	protected /*@ spec_public @*/ boolean audioOff =false;
+	protected /*@ spec_public @*/ boolean isAudioPaused =false;
+	protected /*@ spec_public @*/ long audioPausedTime;
 	//MONITOR
-	private AlarmModule alarmMod;
-	private boolean waitingReset=false;
+	private/*@ non_null */AlarmModule alarmMod;
+	protected /*@ spec_public @*/ boolean waitingReset=false;
 	
 	public Alarm(boolean latch,int delay, String prio,int max,int min,int id,MeSystem s){
 		this.isLatching = latch;
@@ -45,18 +44,24 @@ public class Alarm{
 		this.min_th=(double) min;
 		this.valID=id;
 		this.mySystem = s;
-		//System.out.println("init alarm "+this.valID+" maxt:"+this.max_th+" minth: "+this.min_th+" delay: "+this.alarmDelay);
 	}
-	
+	protected double getValue() {
+		return this.mySystem.getValue(this.valID);
+	}
 	/*
 	 * main update function of the alarm.
 	 * use this function inside the main loop of the program keeping the values updated in the MeSystem.
 	 */
+	/*@
+	@	ensures  !(visualAlarm && waitingReset);
+	@	ensures  !(audioAlarm && isAudioPaused) || (audioAlarm && audioOff); 
+	*/
 	public void check() {
 		if(this.isActive ) {
-			double monitoredVal=this.mySystem.getValue(this.valID);
+			double monitoredVal=this.getValue();
 			//ALARM CONDITION RISING
 			if ( (monitoredVal>this.max_th || monitoredVal<this.min_th) && !this.alarmCondition) {
+				//assert(!this.visualAlarm ! ) : "alarm reset but audio still there";
 				this.alarmCondition=true;
 				if(!this.waitingReset) {
 					updateMonitor(1);
@@ -96,6 +101,8 @@ public class Alarm{
 				System.out.println(date+" alarm "+this.valID+" condition clear. Alarm is latching manual reset needed.");
 				}
 				this.waitingReset=true;
+				this.visualAlarm=false;
+				this.audioAlarm=false;
 			}
 			
 			
@@ -114,7 +121,11 @@ public class Alarm{
 	 * Turn the sound on, the video alarm on, update the gui, save the trigger time and log the event
 	 * @param monitoredVal value that triggered the alarm for log message
 	 */
-	private void alarmOn(double monitoredVal) {
+	/*@
+	  @ requires !visualAlarm;
+	  @ requires monitoredVal<=100 && monitoredVal>=0;
+	  @*/
+	protected void alarmOn(double monitoredVal) {
 		assert this.alarmCondition=true : "alarm turning on without alarm condition";
 		if(!this.audioOff && !this.isAudioPaused) {
 			this.audioAlarm=true;
@@ -131,13 +142,16 @@ public class Alarm{
 	 * Turn the visual and audio alarm off, update the gui, reset trigger time and log the event
 	 * @param monitoredVal last value that excluded the alarm for log message
 	 */
-	private void alarmOff(double monitoredVal) {
+	/*@
+	  @ requires !visualAlarm;
+	  @*/
+	protected void alarmOff(double monitoredVal) {
 		assert this.alarmCondition==true : "alarm turning off without alarm condition";
 		this.alarmCondition=false;
 		this.alarmConditionStart=0;
 		resetAck();
 		this.audioAlarm=false;
-		assert this.visualAlarm==true : "alarm on without visual signal!";
+		if(!this.waitingReset) {assert this.visualAlarm==true : "alarm on without visual signal!";}
 		this.visualAlarm=false;
 		updateMonitor(0);
 		this.alarmRiseTime= 0;
@@ -145,22 +159,13 @@ public class Alarm{
 		System.out.println(date+" alarm "+this.valID+" reset with value "+ monitoredVal);
 	}
 	
-	/*
-	 * Pause the audio alarm.
-	 * Pause the audio saving the time of this action for logging and timers.
-	public void pauseAudio() {
-		if(this.audioAlarm && this.alarmCondition) {
-			this.audioAlarm=false;	
-			this.isAudioPaused=true;
-			this.audioPausedTime= System.currentTimeMillis();
-			Date date=new Date(this.audioPausedTime);
-			System.out.println(date+" alarm aduio "+this.valID+" paused");
-		}
-	}*/
-	
+
 	/*
 	 * disable audio func for this alarm, should be paired with an acustic reminder signal.
 	 */
+	/*@
+	  @ ensures audioOff && !audioAlarm;
+	  @*/
 	public void disableAudio() {
 		this.audioOff=true;
 		this.audioAlarm=false;
@@ -169,6 +174,10 @@ public class Alarm{
 	/*
 	 * re-enable audio after a manual exclusion
 	 */
+	/*@
+	  @ requires audioOff;
+	  @ ensures !audioOff;
+	  @*/
 	public void enableAudio() {
 		this.audioOff=false;
 		if(this.visualAlarm) {
@@ -181,6 +190,9 @@ public class Alarm{
 	 * rise an ack signal that stops audio notification.
 	 * marks time for logging and timers.
 	 */
+	/*@
+	  @ensures (audioAlarm && alarmCondition)==>(isAudioPaused && !audioAlarm && acknowledged); 
+	  @*/
 	public void acknowledged() {
 		if(this.audioAlarm && this.alarmCondition) {
 			this.audioAlarm=false;	
@@ -194,6 +206,14 @@ public class Alarm{
 		}
 	}
 	
+	/*
+	 * private function used to reset ack in case of timer expiration or alarm switching off while acknowledged
+	 */
+	/*@
+	  @ requires acknowledged;
+	  @ ensures !acknowledged;
+	  @ ensures (isAudioPaused && audioPausedTime>0 && audioOff) ==> (audioAlarm && !isAudioPaused) ;
+	  @*/
 	private void resetAck(){
 		this.acknowledged=false;
 		this.ackStartTime=0;
@@ -210,10 +230,14 @@ public class Alarm{
 	
 	
 	/*
-	 * Reset a latching alarm
+	 * Turn off a latching alarm
 	 */
+	/*@
+	  @ requires isLatching;
+	  @ ensures waitingReset ==> !waitingReset;
+	  @*/
 	public boolean alarmReset() {
-		if (this.isLatching) {
+		if (this.isLatching && this.waitingReset) {
 			this.alarmOff(this.mySystem.getValue(this.valID));
 			this.waitingReset=false;
 			return true;
@@ -223,8 +247,12 @@ public class Alarm{
 	}
 	
 	/*
-	 * cicla fra allarme attivo e disattivo per escluderlo o riattivarlo
+	 * deactivate alarm
+	 * @param status: if false alarm is deactivated, if true alarm is re-enabled
 	 */
+	/*@
+	  @  ensures isActive <==> status;
+	  @*/
 	public void alarmInactivationStateSwitch(boolean status) {
 		if(this.isActive && !status) {
 			this.isActive=false;
@@ -234,11 +262,14 @@ public class Alarm{
 			}
 	}
 	
+	/*
+	 * monitor methods
+	 */
 	public void attachMonitor(AlarmModule m) {
 		this.alarmMod = m;
 	}
 	
-	private void updateMonitor(int a) {
+	protected void updateMonitor(int a) {
 		this.alarmMod.alarmState(a);
 	
 	}
@@ -258,25 +289,21 @@ public class Alarm{
 	public boolean isAlarmCondition() {
 		return this.alarmCondition;
 	}
-	/*
-	 * getter for testing
-	 */
+	
 	public boolean isVisualAlarm() {
 		return this.visualAlarm;
 	}	
-	/*
-	 * getter for testing
-	 */
+	
 	public boolean isAudioAlarm() {
 		return this.audioAlarm;
 	}
 	
-	/*
-	 * getter for testing
-	 */
+	
 	public boolean isWaitingReset() {
 		return this.waitingReset;
 	}
+
+	
 	
 	
 }

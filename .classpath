@@ -25,5 +25,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="var" path="OPENJML_RUNTIME_LIBRARY"/>
+	<classpathentry kind="lib" path="modeljunit-2.5-jar-with-dependencies.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

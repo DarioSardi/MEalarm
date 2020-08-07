@@ -5,22 +5,18 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 
 import javax.swing.BorderFactory;
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-
 import medicalEquip.Alarm;
 import medicalEquip.MeSystem;
 
 public class Monitor {
-	AlarmModule[] AlarmModuleList;
-	MeSystem me;
-	JComboBox<String> alarms;
-	JFrame frame;
-	
+	protected AlarmModule[] AlarmModuleList;
+	protected MeSystem me;
+	protected JComboBox<String> alarms;
+	protected JFrame frame;
+	protected JPanel myPanel;
 	public Monitor() {
 		System.out.println("empty monitor created for manual testing");
 	}
@@ -29,39 +25,10 @@ public class Monitor {
 		this.me=me;
 		this.AlarmModuleList= new AlarmModule[alarmSet.length];
 		this.frame = new JFrame();
-		JPanel panel = new JPanel();
-		panel.setBorder(BorderFactory.createEmptyBorder(30,30,30,30));
-		panel.setLayout(new GridLayout(0,1));
-		
-		//MANUAL CONTROLS
-		JPanel controls = new JPanel();
-		controls.setLayout(new GridLayout(2,2));
-
-		String[] numeroAllarmi = new String[this.AlarmModuleList.length];
-		for (int i = 0; i < this.AlarmModuleList.length; i++) {
-			numeroAllarmi[i]=String.valueOf(i);
-		}
-		JLabel selectList = new JLabel("select the values you want to control: ");
-		controls.add(selectList);
-		
-		this.alarms = new JComboBox<String>(numeroAllarmi);
-		controls.add(alarms);
-		
-		controls.add(new JScrollPane(alarms));
-		JLabel l = new JLabel("use those buttons to increase or decrease the values: ");
-		controls.add(l);
-		
-		JPanel controlsA = new JPanel();
-		JButton plus = new JButton("+");
-		plus.addActionListener(event -> this.me.changeValues(Integer.valueOf((String) this.alarms.getSelectedItem()), 1));
-		JButton minus = new JButton("-");
-		minus.addActionListener(event -> this.me.changeValues(Integer.valueOf((String) this.alarms.getSelectedItem()), -1));
-		controlsA.add(plus);
-		controlsA.add(minus);
-		controls.add(controlsA);
-		
-		panel.add(controls);
-		
+		myPanel = new JPanel();
+		myPanel.setBorder(BorderFactory.createEmptyBorder(30,30,30,30));
+		myPanel.setLayout(new GridLayout(0,1));
+			
 		
 		for (int i = 0; i < this.AlarmModuleList.length; i++) {
 			AlarmModule am = new AlarmModule();
@@ -69,11 +36,11 @@ public class Monitor {
 			am.connectAlarm(alarmSet[i]);
 			am.setRanges();
 			JPanel testPanel = am.getPanel();
-			panel.add(testPanel);
+			myPanel.add(testPanel);
 			this.AlarmModuleList[i]=am;
 		}
 		
-		this.frame.add(panel,BorderLayout.CENTER);
+		this.frame.add(myPanel,BorderLayout.CENTER);
 		this.frame.setSize(520,600);
 		this.frame.setMinimumSize(new Dimension(520,600));
 		this.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
