@@ -124,6 +124,7 @@ public class Alarm{
 	/*@
 	  @ requires !visualAlarm;
 	  @ requires monitoredVal<=100 && monitoredVal>=0;
+	  @ ensures visualAlarm;
 	  @*/
 	protected void alarmOn(double monitoredVal) {
 		assert this.alarmCondition=true : "alarm turning on without alarm condition";
@@ -143,7 +144,8 @@ public class Alarm{
 	 * @param monitoredVal last value that excluded the alarm for log message
 	 */
 	/*@
-	  @ requires !visualAlarm;
+	  @ requires visualAlarm;
+	  @ ensures !visualAlarm;
 	  @*/
 	protected void alarmOff(double monitoredVal) {
 		assert this.alarmCondition==true : "alarm turning off without alarm condition";

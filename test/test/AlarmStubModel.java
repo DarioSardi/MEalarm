@@ -45,6 +45,11 @@ public class AlarmStubModel extends Alarm implements FsmModel{
 		this.isAudioPaused=false;
 	}
 	
+	@Override
+	protected void updateMonitor(int a) {
+		//ok
+	}
+	
 	@Action
 	public void allarmingValue() {
 		this.myValue = ThreadLocalRandom.current().nextDouble(this.max_th,100);
