@@ -1,5 +1,6 @@
 package medicalEquip;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
@@ -15,11 +16,12 @@ public class MeSystem implements Runnable{
 	private Monitor myMonitor=null;
 	public boolean autoUpdate = true;
 	public int dataLine=0;
-	public MeSystem() throws IOException {
+	public MeSystem(){
 		this.machineOn=true;
 		String row;
 		final ClassLoader loader = MeSystem.class.getClassLoader();
 		URL url = loader.getResource("confFiles/alarmsData.txt");
+		try {
 		BufferedReader csvReader = new BufferedReader(new FileReader(url.getPath()));
 		int ALARMSNUMBER = Integer.valueOf(csvReader.readLine());
 		this.data = new double[ALARMSNUMBER];
@@ -32,7 +34,13 @@ public class MeSystem implements Runnable{
 			i++;
 		}		
 		//this.data[1]=42;
-		csvReader.close();
+		csvReader.close();}
+		catch (FileNotFoundException e) {
+			//
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	public MeSystem(String file) throws IOException {
 		this.machineOn=true;

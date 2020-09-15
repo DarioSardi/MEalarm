@@ -24,9 +24,9 @@ public class Alarm{
 	//@ public invariant alarmRiseTime>=0;
 	//ACKNOWLEDGE
 	protected /*@ spec_public @*/boolean acknowledged=false;
-	private boolean isTimedAck=true;
+	protected boolean isTimedAck=true;
 	protected long ackStartTime=0; 
-	private long timedAckLimit=10000; 
+	protected long timedAckLimit=10000; 
 	//AUDIO PAUSED
 	protected /*@ spec_public @*/ boolean audioOff =false;
 	protected /*@ spec_public @*/ boolean isAudioPaused =false;
@@ -38,6 +38,7 @@ public class Alarm{
 	public Alarm(boolean latch,int delay, String prio,int max,int min,int id,MeSystem s){
 		this.isLatching = latch;
 		this.alarmCondition=false;
+		this.isActive=true;
 		this.alarmDelay = delay;
 		this.priority = prio;
 		this.max_th=(double) max;
@@ -204,7 +205,7 @@ public class Alarm{
 			this.acknowledged=true;
 			Date date=new Date(this.audioPausedTime);
 			System.out.println(date+" alarm "+this.valID+" acknowledged");
-			this.alarmMod.acknowledgeUpdate(true);
+			this.ackUpdate(true);
 		}
 	}
 	
@@ -216,10 +217,10 @@ public class Alarm{
 	  @ ensures !acknowledged;
 	  @ ensures (isAudioPaused && audioPausedTime>0 && audioOff) ==> (audioAlarm && !isAudioPaused) ;
 	  @*/
-	private void resetAck(){
+	protected void resetAck(){
 		this.acknowledged=false;
 		this.ackStartTime=0;
-		this.alarmMod.acknowledgeUpdate(false);
+		this.ackUpdate(false);
 		//audio paused or off?
 		if( this.isAudioPaused && this.audioPausedTime>0  && !this.audioOff) {
 			this.audioAlarm= true;
@@ -228,7 +229,9 @@ public class Alarm{
 		}
 	}
 	
-	
+	protected void ackUpdate(Boolean status) {
+		this.alarmMod.acknowledgeUpdate(status);
+	}
 	
 	
 	/*
